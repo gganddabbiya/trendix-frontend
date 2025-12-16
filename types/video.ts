@@ -1,0 +1,21 @@
+interface Video {
+    video_id: string,
+    title: string,
+    channel_id: string,
+    platform: string,
+    view_count: number,
+    like_count: number,
+    comment_count: number,
+    published_at: string,
+    thumbnail_url: string,
+    category: string,
+    sentiment_label: string,
+    sentiment_score: number,
+    trend_score: number,
+    engagement_score: number,
+    score_sentiment: number,
+    score_trend: number,
+    total_score: number,
+    crawled_at: string,
+    channel_username: string
+}
