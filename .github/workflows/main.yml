@@ -1,4 +1,4 @@
-name: Deploy multi-agent-ui via Docker
+name: Deploy trendix-frontend via Docker
 
 on:
   push:
@@ -35,7 +35,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ghcr.io/${{ secrets.REPO_USER }}/multi-agent-ui:latest
+          tags: ghcr.io/${{ secrets.REPO_USER }}/trendix-frontend:latest
           platforms: linux/amd64,linux/arm64
 
   deploy:
@@ -47,7 +47,7 @@ jobs:
         run: echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
     
       - name: Pull latest image
-        run: docker pull ghcr.io/${{ secrets.REPO_USER }}/multi-agent-ui:latest
+        run: docker pull ghcr.io/${{ secrets.REPO_USER }}/trendix-frontend:latest
 
       - name: Stop old container
         run: |
