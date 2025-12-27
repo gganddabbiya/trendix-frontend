@@ -8,49 +8,36 @@ import VideoCard, { Video } from './VideoCard'
 import VideoDetailModal from './VideoDetailModal'
 import { Icon } from '@iconify/react/dist/iconify.js'
 
-// 전체 TOP 8 더미 데이터
-const globalTop8: Video[] = [
-    { id: 'g1', title: '[속보] 오늘 발표된 새로운 정책, 전문가들의 반응은?', channelName: '뉴스채널 A', channelId: 'ch1', thumbnailUrl: 'https://picsum.photos/seed/g1/400/225', viewCount: 1250000, viewCountChange: 450000, likeCount: 85000, likeCountChange: 12000, publishedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), duration: '12:34', categoryId: '25', isShort: false, trendingRank: 1, trendingReason: '3시간 만에 조회수 45만 급등' },
-    { id: 'g2', title: '이 게임 실화냐? 출시 3일 만에 스팀 1위', channelName: '게임채널', channelId: 'ch2', thumbnailUrl: 'https://picsum.photos/seed/g2/400/225', viewCount: 890000, viewCountChange: 320000, likeCount: 67000, likeCountChange: 8500, publishedAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), duration: '18:22', categoryId: '20', isShort: false, trendingRank: 2, trendingReason: '게임 카테고리 1위' },
-    { id: 'g3', title: '단 15초 만에 100만뷰 달성한 비결 #shorts', channelName: '쇼츠마스터', channelId: 'ch3', thumbnailUrl: 'https://picsum.photos/seed/g3/400/225', viewCount: 2100000, viewCountChange: 1800000, likeCount: 180000, likeCountChange: 45000, publishedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), duration: '0:15', categoryId: '24', isShort: true, trendingRank: 3, trendingReason: 'Shorts 좋아요 급증' },
-    { id: 'g4', title: '아이유 신곡 첫 공개 무대! 역대급 라이브', channelName: '음악의 신', channelId: 'ch4', thumbnailUrl: 'https://picsum.photos/seed/g4/400/225', viewCount: 3500000, viewCountChange: 890000, likeCount: 290000, likeCountChange: 67000, publishedAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), duration: '4:32', categoryId: '10', isShort: false, trendingRank: 4, trendingReason: '음악 카테고리 최다 조회' },
-    { id: 'g5', title: '프리미어리그 | 손흥민 결승골 폭발', channelName: '스포츠 투데이', channelId: 'ch5', thumbnailUrl: 'https://picsum.photos/seed/g5/400/225', viewCount: 780000, viewCountChange: 280000, likeCount: 52000, likeCountChange: 9800, publishedAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), duration: '8:45', categoryId: '17', isShort: false, trendingRank: 5, trendingReason: '스포츠 카테고리 급상승' },
-    { id: 'g6', title: '2024 헤어 트렌드 총정리', channelName: '스타일리스트K', channelId: 'ch6', thumbnailUrl: 'https://picsum.photos/seed/g6/400/225', viewCount: 567000, viewCountChange: 234000, likeCount: 41000, likeCountChange: 7800, publishedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), duration: '11:55', categoryId: '26', isShort: false, trendingRank: 6, trendingReason: '노하우 카테고리 좋아요 급증' },
-    { id: 'g7', title: '최신 AI 기술로 만든 놀라운 결과물', channelName: '테크리뷰', channelId: 'ch7', thumbnailUrl: 'https://picsum.photos/seed/g7/400/225', viewCount: 456000, viewCountChange: 156000, likeCount: 34000, likeCountChange: 5600, publishedAt: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(), duration: '15:20', categoryId: '28', isShort: false, trendingRank: 7, trendingReason: '과학기술 카테고리 급등' },
-    { id: 'g8', title: '오늘의 주요 뉴스 브리핑', channelName: '뉴스채널 B', channelId: 'ch8', thumbnailUrl: 'https://picsum.photos/seed/g8/400/225', viewCount: 340000, viewCountChange: 120000, likeCount: 28000, likeCountChange: 4200, publishedAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), duration: '9:20', categoryId: '25', isShort: false, trendingRank: 8, trendingReason: '뉴스 카테고리 상승' },
-]
-
-// 카테고리별 TOP 8 더미 데이터 생성 함수
-const generateCategoryVideos = (categoryId: string, categoryName: string): Video[] => {
-    return Array.from({ length: 8 }, (_, i) => ({
-        id: `cat${categoryId}-${i + 1}`,
-        title: `${categoryName} 인기 영상 ${i + 1}위 - 지금 화제인 콘텐츠`,
-        channelName: `${categoryName} 채널 ${i + 1}`,
-        channelId: `ch-${categoryId}-${i + 1}`,
-        thumbnailUrl: `https://picsum.photos/seed/${categoryId}-${i}/400/225`,
-        viewCount: 1000000 - (i * 80000),
-        viewCountChange: 300000 - (i * 25000),
-        likeCount: 80000 - (i * 6000),
-        likeCountChange: 10000 - (i * 800),
-        publishedAt: new Date(Date.now() - (i + 2) * 60 * 60 * 1000).toISOString(),
-        duration: `${10 + i}:${30 + i}`,
-        categoryId,
-        isShort: i % 4 === 0,
-        trendingRank: i + 1,
-        trendingReason: `${categoryName} 카테고리 ${i + 1}위 급등 영상`,
-    }))
+// YouTube 카테고리 ID → backend category_id (또는 동일 ID) 매핑
+// 현재는 카테고리 ID를 그대로 사용하므로 all만 별도로 두고 나머지는 그대로 비교합니다.
+const CATEGORY_ID_MAP: Record<string, string> = {
+    all: 'all',
+    '10': '10',
+    '20': '20',
+    '24': '24',
+    '17': '17',
+    '25': '25',
+    '22': '22',
+    '26': '26',
+    '28': '28',
 }
 
-// 카테고리별 데이터 맵
-const categoryVideosMap: Record<string, Video[]> = {
-    '10': generateCategoryVideos('10', '음악'),
-    '20': generateCategoryVideos('20', '게임'),
-    '24': generateCategoryVideos('24', '엔터테인먼트'),
-    '17': generateCategoryVideos('17', '스포츠'),
-    '25': generateCategoryVideos('25', '뉴스'),
-    '22': generateCategoryVideos('22', '브이로그'),
-    '26': generateCategoryVideos('26', '노하우/스타일'),
-    '28': generateCategoryVideos('28', '과학기술'),
+// /trends/videos/surge 응답 타입 (필요 필드만 정의)
+interface SurgeVideoItem {
+    video_id: string
+    title: string
+    channel_id: string
+    channel_username?: string
+    platform: string
+    category?: string | null
+    category_id?: string | number | null
+    view_count: number
+    like_count: number
+    comment_count: number
+    published_at: string
+    thumbnail_url: string
+    crawled_at: string
+    surge_score?: number
 }
 
 export default function TrendingVideos() {
@@ -60,19 +47,154 @@ export default function TrendingVideos() {
     const [selectedPlatform, setSelectedPlatform] = useState<Platform>('youtube')
     // URL에서 카테고리 읽어오기 (뒤로가기 시 유지됨)
     const [selectedCategory, setSelectedCategory] = useState<string>(
-        searchParams.get('category') || 'all'
+        searchParams.get('category_id') || 'all'
     )
     // 모달용 선택된 영상
     const [selectedVideo, setSelectedVideo] = useState<Video | null>(null)
+
+    // 급등 전체 데이터 (surge API 기반 Top 10)
+    const [globalTop8, setGlobalTop8] = useState<Video[]>([])
+    // 카테고리별 추천 영상 데이터
+    const [categoryVideos, setCategoryVideos] = useState<Record<string, Video[]>>({})
+    const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+
+    // 전체 급등 Top 10: /trends/videos/surge 기반 (전체 탭)
+    // 나머지 카테고리는 /trends/categories/{category}/recommendations 기반
+    useEffect(() => {
+        const controller = new AbortController()
+
+        const fetchData = async () => {
+            try {
+                setIsLoading(true)
+                setError(null)
+
+                if (selectedCategory === 'all') {
+                    // 급등 영상 전체 Top 10 조회
+                    const res = await fetch(
+                        `${process.env.NEXT_PUBLIC_API_BASE_URL}/trends/videos/surge?platform=youtube&limit=10&days=3&velocity_days=1`,
+                        {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            cache: 'no-store',
+                            signal: controller.signal,
+                        }
+                    )
+
+                    if (!res.ok) {
+                        throw new Error('급등 영상 데이터를 불러오지 못했습니다.')
+                    }
+
+                    const data = await res.json()
+                    const items: SurgeVideoItem[] = (data.items ?? []) as SurgeVideoItem[]
+
+                    // surge_score 기준 정렬 (없으면 원래 순서 유지)
+                    const sorted = [...items].sort((a, b) => {
+                        if (a.surge_score == null && b.surge_score == null) return 0
+                        if (a.surge_score == null) return 1
+                        if (b.surge_score == null) return -1
+                        return b.surge_score - a.surge_score
+                    })
+
+                    const mapped: Video[] = sorted.slice(0, 10).map((item, index) => ({
+                        id: item.video_id,
+                        title: item.title,
+                        channelName: item.channel_username?.replace('@', '') ?? '',
+                        channelId: item.channel_id,
+                        thumbnailUrl: item.thumbnail_url,
+                        viewCount: item.view_count,
+                        viewCountChange: 0,
+                        likeCount: item.like_count ?? 0,
+                        likeCountChange: 0,
+                        publishedAt: item.published_at,
+                        duration: '', // 백엔드에서 제공 시 매핑
+                        // category_id가 있으면 우선 사용, 없으면 category 문자열 또는 uncategorized
+                        categoryId: String(
+                            item.category_id ?? item.category ?? 'uncategorized'
+                        ),
+                        isShort: false, // 필요 시 백엔드 필드 매핑
+                        trendingRank: index + 1,
+                        trendingReason:
+                            item.surge_score != null
+                                ? `최근 3일 기준 급등 점수 ${item.surge_score.toFixed(1)}`
+                                : '최근 3일 기준 급등 영상',
+                    }))
+
+                    setGlobalTop8(mapped)
+                } else {
+                    // 개별 카테고리 추천 영상 조회
+                    const mappedId = CATEGORY_ID_MAP[selectedCategory] ?? selectedCategory
+
+                    const res = await fetch(
+                        `${process.env.NEXT_PUBLIC_API_BASE_URL}/trends/categories/${encodeURIComponent(
+                            mappedId
+                        )}/recommendations?limit=20&days=14&platform=youtube`,
+                        {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            cache: 'no-store',
+                            signal: controller.signal,
+                        }
+                    )
+
+                    if (!res.ok) {
+                        throw new Error('카테고리 추천 영상을 불러오지 못했습니다.')
+                    }
+
+                    const data = await res.json()
+                    const items: any[] = data.items ?? []
+
+                    const mapped: Video[] = items.slice(0, 20).map((item, index) => ({
+                        id: item.video_id,
+                        title: item.title,
+                        channelName: item.channel_username?.replace('@', '') ?? '',
+                        channelId: item.channel_id,
+                        thumbnailUrl: item.thumbnail_url,
+                        viewCount: item.view_count,
+                        viewCountChange: 0,
+                        likeCount: item.like_count ?? 0,
+                        likeCountChange: 0,
+                        publishedAt: item.published_at,
+                        duration: '', // 백엔드에서 제공 시 매핑
+                        categoryId: String(
+                            item.category_id ?? item.category ?? mappedId
+                        ),
+                        isShort: false,
+                        trendingRank: index + 1,
+                        trendingReason: `${item.category ?? mappedId} 카테고리 추천 영상`,
+                    }))
+
+                    setCategoryVideos((prev) => ({
+                        ...prev,
+                        [selectedCategory]: mapped,
+                    }))
+                }
+            } catch (e: any) {
+                if (e?.name === 'AbortError') return
+                console.error(e)
+                setError('급등/추천 영상 데이터를 불러오지 못했습니다.')
+            } finally {
+                setIsLoading(false)
+            }
+        }
+
+        fetchData()
+
+        return () => controller.abort()
+    }, [selectedCategory])
 
     // 카테고리 변경 시 URL 업데이트 (해시 없이)
     const handleCategoryChange = (categoryId: string) => {
         setSelectedCategory(categoryId)
         const params = new URLSearchParams(searchParams.toString())
         if (categoryId === 'all') {
-            params.delete('category')
+            params.delete('category_id')
         } else {
-            params.set('category', categoryId)
+            params.set('category_id', categoryId)
         }
         const queryString = params.toString()
         router.replace(queryString ? `/?${queryString}` : '/', { scroll: false })
@@ -83,10 +205,12 @@ export default function TrendingVideos() {
         setSelectedVideo(video)
     }
 
-    // 카테고리별 필터링: 전체는 globalTop8, 개별 카테고리는 해당 카테고리 TOP 8
+    // 카테고리별 필터링:
+    // - 전체: surge 기반 globalTop8
+    // - 개별 카테고리: recommendations 기반 categoryVideos[selectedCategory]
     const filteredVideos = selectedCategory === 'all'
         ? globalTop8
-        : categoryVideosMap[selectedCategory] || []
+        : categoryVideos[selectedCategory] || []
 
     return (
         <section id='trending-section' className='py-12 scroll-mt-20'>
@@ -121,7 +245,16 @@ export default function TrendingVideos() {
 
                 {/* Video Grid - 4열 x 2줄 = 8개 */}
                 <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-6'>
-                    {filteredVideos.length > 0 ? (
+                    {isLoading ? (
+                        <div className='col-span-full text-center py-12 text-gray-500'>
+                            <Icon icon='mdi:loading' className='text-5xl mx-auto mb-4 animate-spin' />
+                            <p>지금 뜨는 영상을 불러오는 중입니다...</p>
+                        </div>
+                    ) : error ? (
+                        <div className='col-span-full text-center py-12 text-red-500'>
+                            <p>{error}</p>
+                        </div>
+                    ) : filteredVideos.length > 0 ? (
                         filteredVideos.map((video) => (
                             <VideoCard
                                 key={video.id}
