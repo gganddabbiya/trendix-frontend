@@ -78,20 +78,26 @@ export default function VideoCard({ video, onVideoClick }: VideoCardProps) {
                         fill
                         className='object-cover group-hover:scale-105 transition-transform duration-300'
                     />
-                    {/* Duration badge */}
-                    <div className='absolute bottom-2 right-2 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded'>
-                        {video.duration}
-                    </div>
+                    {/* Duration badge - Shorts가 아닌 경우에만 표시 */}
+                    {!video.isShort && video.duration && (
+                        <div className='absolute bottom-2 right-2 bg-black/80 text-white text-xs px-1.5 py-0.5 rounded'>
+                            {video.duration}
+                        </div>
+                    )}
                     {/* Short badge */}
                     {video.isShort && (
-                        <div className='absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1'>
-                            <Icon icon='mdi:youtube-shorts' className='text-sm' />
-                            Short
+                        <div className='absolute bottom-2 left-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs px-2 py-1 rounded-md flex items-center gap-1 font-bold shadow-lg border border-red-400'>
+                            <Icon icon='mdi:youtube-shorts' className='text-sm animate-pulse' />
+                            <span className='tracking-wide'>Shorts</span>
                         </div>
                     )}
                     {/* Trending badge */}
                     {video.trendingRank && video.trendingRank <= 10 && (
-                        <div className='absolute top-2 right-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1'>
+                        <div className={`absolute top-2 right-2 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 font-bold shadow-lg ${
+                            video.trendingRank <= 3 
+                                ? 'bg-gradient-to-r from-yellow-400 to-orange-500' 
+                                : 'bg-gradient-to-r from-orange-500 to-red-500'
+                        }`}>
                             <Icon icon='mdi:fire' className='text-sm' />
                             #{video.trendingRank}
                         </div>

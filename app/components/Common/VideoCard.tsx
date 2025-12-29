@@ -35,6 +35,16 @@ export const VideoCard = ({ video, isHorizontal = false }: { video: Video; isHor
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ease-in-out"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                
+                {/* Shorts 배지 */}
+                {video.is_shorts && (
+                    <div className="absolute bottom-2 left-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs px-2 py-1 rounded-md flex items-center gap-1 font-bold shadow-lg border border-red-400">
+                        <svg className="w-3 h-3 animate-pulse" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18.54,9,8.88,3.46a3.42,3.42,0,0,0-5.13,3V17.58A3.42,3.42,0,0,0,7.17,21a3.43,3.43,0,0,0,1.71-.46L18.54,15a3.42,3.42,0,0,0,0-5.92Zm-1,4.19L8.88,18.81a1.44,1.44,0,0,1-2.23-1.19V6.42a1.44,1.44,0,0,1,2.23-1.19L17.5,10.81A1.42,1.42,0,0,1,17.5,13.19Z"/>
+                        </svg>
+                        <span className="tracking-wide">Shorts</span>
+                    </div>
+                )}
             </div>
             <div>
                 <h3 className="font-semibold text-gray-900 leading-tight mb-1 group-hover:text-blue-600 transition-colors line-clamp-2">

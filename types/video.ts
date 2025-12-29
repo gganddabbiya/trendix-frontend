@@ -19,5 +19,6 @@ interface Video {
     crawled_at: string,
     channel_username: string,
     similarity?: number,
-    source?: string
+    source?: string,
+    is_shorts?: boolean
 }
