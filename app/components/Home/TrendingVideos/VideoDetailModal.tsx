@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { Icon } from '@iconify/react/dist/iconify.js'
 
@@ -49,48 +49,128 @@ function timeAgo(dateString: string): string {
     return `${Math.floor(seconds / 604800)}주 전`
 }
 
-// 더미 시계열 데이터
-const dummyViewHistory = [
-    { time: '8시간 전', count: 50000 },
-    { time: '7시간 전', count: 120000 },
-    { time: '6시간 전', count: 280000 },
-    { time: '5시간 전', count: 450000 },
-    { time: '4시간 전', count: 680000 },
-    { time: '3시간 전', count: 890000 },
-    { time: '2시간 전', count: 1050000 },
-    { time: '1시간 전', count: 1180000 },
-    { time: '현재', count: 1250000 },
-]
+// 스냅샷 히스토리 데이터 타입
+interface SnapshotData {
+    snapshot_date: string
+    view_count: number
+    like_count: number
+    comment_count: number
+    daily_view_increase: number
+    daily_like_increase: number
+    daily_comment_increase: number
+}
+
+// API 응답 타입
+interface VideoHistoryResponse {
+    video_id: string
+    items: SnapshotData[]
+}
+
+// 차트용 데이터 변환
+function formatSnapshotForChart(snapshots: SnapshotData[], metric: 'view_count' | 'like_count' | 'comment_count') {
+    return snapshots.map(snapshot => ({
+        time: new Date(snapshot.snapshot_date).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }),
+        count: snapshot[metric] || 0
+    }))
+}
 
 function SimpleChart({ data, label, color }: { data: { time: string; count: number }[], label: string, color: string }) {
+    if (!data.length) return null
+    
     const maxCount = Math.max(...data.map(d => d.count))
+    const minCount = Math.min(...data.map(d => d.count))
+    const avgCount = data.reduce((sum, d) => sum + d.count, 0) / data.length
+    const hasVariation = maxCount !== minCount
+    
+    // 평균값이 차트 중간(50%)에 오도록 범위 계산
+    let chartMin: number, chartMax: number
+    
+    if (hasVariation) {
+        const range = maxCount - minCount
+        // 평균값을 중심으로 위아래 확장
+        const avgToMax = maxCount - avgCount
+        const avgToMin = avgCount - minCount
+        const maxRange = Math.max(avgToMax, avgToMin) * 2
+        
+        chartMin = Math.max(0, avgCount - maxRange / 2)
+        chartMax = avgCount + maxRange / 2
+    } else {
+        // 변화가 없는 경우 평균값 기준으로 약간의 범위 설정
+        chartMin = avgCount * 0.95
+        chartMax = avgCount * 1.05
+    }
 
     return (
         <div className='bg-gray-50 rounded-lg p-3'>
             <h4 className='font-medium text-gray-700 mb-3 text-sm'>{label} 추이</h4>
-            <div className='flex items-end gap-1 h-20'>
-                {data.map((item, i) => (
-                    <div key={i} className='flex-1 flex flex-col items-center'>
-                        <div
-                            className={`w-full rounded-t ${color}`}
-                            style={{ height: `${(item.count / maxCount) * 100}%`, minHeight: '2px' }}
-                            title={`${formatNumber(item.count)}`}
-                        />
-                    </div>
-                ))}
+            <div className='flex items-end h-20 relative'>
+                {/* 평균선 표시 (중간 50% 위치) */}
+                <div className='absolute left-0 right-0 border-b border-gray-300 border-dashed opacity-50' 
+                     style={{ bottom: '50%' }}
+                     title={`평균: ${formatNumber(Math.round(avgCount))}`}
+                />
+                {data.map((item, i) => {
+                    // 평균값이 50% 위치에 오도록 높이 계산
+                    const normalizedValue = (item.count - chartMin) / (chartMax - chartMin)
+                    const height = Math.max(2, normalizedValue * 100)
+                    
+                    return (
+                        <div key={i} className='flex-1 relative'>
+                            <div
+                                className={`w-full ${color} transition-all duration-300`}
+                                style={{ height: `${height}%`, minHeight: '2px' }}
+                                title={`${item.time}: ${formatNumber(item.count)}`}
+                            />
+                        </div>
+                    )
+                })}
             </div>
             <div className='flex justify-between mt-2 text-xs text-gray-500'>
-                <span>{formatNumber(data[0].count)}</span>
-                <span className='text-green-600 font-medium'>
-                    +{formatNumber(data[data.length - 1].count - data[0].count)}
+                <span>{formatNumber(data[0]?.count || 0)}</span>
+                <span className={`font-medium ${
+                    data[data.length - 1]?.count > data[0]?.count ? 'text-green-600' : 
+                    data[data.length - 1]?.count < data[0]?.count ? 'text-red-600' : 
+                    'text-gray-500'
+                }`}>
+                    {data.length >= 2 ? (
+                        (data[data.length - 1]?.count - data[0]?.count) >= 0 ? 
+                        `+${formatNumber(data[data.length - 1]?.count - data[0]?.count)}` :
+                        formatNumber(data[data.length - 1]?.count - data[0]?.count)
+                    ) : '변화없음'}
                 </span>
-                <span>{formatNumber(data[data.length - 1].count)}</span>
+                <span>{formatNumber(data[data.length - 1]?.count || 0)}</span>
             </div>
         </div>
     )
 }
 
 export default function VideoDetailModal({ video, onClose }: VideoDetailModalProps) {
+    const [snapshotHistory, setSnapshotHistory] = useState<SnapshotData[]>([])
+    const [loading, setLoading] = useState<boolean>(false)
+
+    // 스냅샷 히스토리 데이터 가져오기
+    useEffect(() => {
+        if (!video?.id) return
+
+        const fetchHistory = async () => {
+            setLoading(true)
+            try {
+                const response = await fetch(`http://localhost:8000/trends/videos/${video.id}/history?days=7`)
+                if (response.ok) {
+                    const data: VideoHistoryResponse = await response.json()
+                    setSnapshotHistory(data.items || [])
+                }
+            } catch (error) {
+                console.error('Failed to fetch video history:', error)
+                setSnapshotHistory([])
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchHistory()
+    }, [video?.id])
+
     // ESC 키로 닫기
     useEffect(() => {
         const handleEsc = (e: KeyboardEvent) => {
@@ -192,12 +272,28 @@ export default function VideoDetailModal({ video, onClose }: VideoDetailModalPro
 
                     {/* Charts */}
                     <div className='grid grid-cols-2 gap-4 mb-4'>
-                        <SimpleChart data={dummyViewHistory} label='조회수' color='bg-blue-500' />
-                        <SimpleChart
-                            data={dummyViewHistory.map(d => ({ ...d, count: Math.floor(d.count * 0.068) }))}
-                            label='좋아요'
-                            color='bg-pink-500'
-                        />
+                        {loading ? (
+                            <div className='col-span-2 flex justify-center items-center h-20 text-gray-500'>
+                                차트 데이터를 불러오는 중...
+                            </div>
+                        ) : snapshotHistory.length > 0 ? (
+                            <>
+                                <SimpleChart 
+                                    data={formatSnapshotForChart(snapshotHistory, 'view_count')} 
+                                    label='조회수' 
+                                    color='bg-blue-500' 
+                                />
+                                <SimpleChart 
+                                    data={formatSnapshotForChart(snapshotHistory, 'like_count')} 
+                                    label='좋아요' 
+                                    color='bg-pink-500' 
+                                />
+                            </>
+                        ) : (
+                            <div className='col-span-2 flex justify-center items-center h-20 text-gray-500'>
+                                차트 데이터가 없습니다
+                            </div>
+                        )}
                     </div>
 
                     {/* Actions */}
