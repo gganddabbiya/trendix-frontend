@@ -38,6 +38,8 @@ interface SurgeVideoItem {
     thumbnail_url: string
     crawled_at: string
     surge_score?: number
+    trending_rank?: number
+    is_shorts?: boolean
 }
 
 export default function TrendingVideos() {
@@ -90,13 +92,8 @@ export default function TrendingVideos() {
                     const data = await res.json()
                     const items: SurgeVideoItem[] = (data.items ?? []) as SurgeVideoItem[]
 
-                    // surge_score 기준 정렬 (없으면 원래 순서 유지)
-                    const sorted = [...items].sort((a, b) => {
-                        if (a.surge_score == null && b.surge_score == null) return 0
-                        if (a.surge_score == null) return 1
-                        if (b.surge_score == null) return -1
-                        return b.surge_score - a.surge_score
-                    })
+                    // 백엔드에서 이미 정렬된 순서를 유지 (재정렬하지 않음)
+                    const sorted = [...items]
 
                     const mapped: Video[] = sorted.slice(0, 10).map((item, index) => ({
                         id: item.video_id,
@@ -114,12 +111,12 @@ export default function TrendingVideos() {
                         categoryId: String(
                             item.category_id ?? item.category ?? 'uncategorized'
                         ),
-                        isShort: false, // 필요 시 백엔드 필드 매핑
-                        trendingRank: index + 1,
+                        isShort: item.is_shorts || false,
+                        trendingRank: item.trending_rank || (index + 1),
                         trendingReason:
                             item.surge_score != null
-                                ? `최근 3일 기준 급등 점수 ${item.surge_score.toFixed(1)}`
-                                : '최근 3일 기준 급등 영상',
+                                ? `급등 점수 ${item.surge_score.toFixed(1)} - 조회수 ${(item.view_count || 0).toLocaleString()}`
+                                : `조회수 ${(item.view_count || 0).toLocaleString()} - 최근 급등`,
                     }))
 
                     setGlobalTop8(mapped)
@@ -163,7 +160,7 @@ export default function TrendingVideos() {
                         categoryId: String(
                             item.category_id ?? item.category ?? mappedId
                         ),
-                        isShort: false,
+                        isShort: item.is_shorts || false,
                         trendingRank: index + 1,
                         trendingReason: `${item.category ?? mappedId} 카테고리 추천 영상`,
                     }))
