@@ -126,7 +126,9 @@ function DeltaBarChart({
                 <div className='h-48 mb-1 px-2 overflow-x-auto'>
                     <div className='h-full flex items-end gap-1'>
                         {dataWithDelta.map((item, i) => {
-                            const heightPercent = range > 0 ? (item.delta / range) * 100 : 100
+                            // Δ(차이값)이 0이면 막대는 0 높이로 표시
+                            // range=0(모두 동일)인 경우도 Δ는 전부 0이므로 0으로 처리
+                            const heightPercent = item.delta === 0 ? 0 : range > 0 ? (item.delta / range) * 100 : 0
 
                             return (
                                 <div
@@ -138,7 +140,7 @@ function DeltaBarChart({
                                         className={`w-full rounded-t-md transition-all duration-200 ${colorClass} hover:brightness-110 cursor-pointer shadow-sm`}
                                         style={{
                                             height: `${heightPercent}%`,
-                                            minHeight: '4px',
+                                            minHeight: item.delta === 0 ? '0px' : '4px',
                                             minWidth: '8px',
                                         }}
                                     >
@@ -160,7 +162,7 @@ function DeltaBarChart({
                 <div className='h-48 mb-1 px-2'>
                     <div className='h-full flex items-end gap-1'>
                         {dataWithDelta.map((item, i) => {
-                            const heightPercent = range > 0 ? (item.delta / range) * 100 : 100
+                            const heightPercent = item.delta === 0 ? 0 : range > 0 ? (item.delta / range) * 100 : 0
 
                             return (
                                 <div
@@ -172,7 +174,7 @@ function DeltaBarChart({
                                         className={`w-full rounded-t-md transition-all duration-200 ${colorClass} hover:brightness-110 cursor-pointer shadow-sm`}
                                         style={{
                                             height: `${heightPercent}%`,
-                                            minHeight: '4px',
+                                            minHeight: item.delta === 0 ? '0px' : '4px',
                                         }}
                                     >
                                         <div className='absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-10 pointer-events-none'>
