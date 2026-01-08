@@ -52,7 +52,9 @@ function timeAgo(dateString: string): string {
 
 // 스냅샷 히스토리 데이터 타입
 interface SnapshotData {
-    snapshot_date: string
+//=======
+//interface ViewHistoryItem {
+    snapshot_date: Date
     view_count: number
     like_count: number
     comment_count: number
@@ -237,7 +239,6 @@ export default function VideoDetailModal({ video, onClose }: VideoDetailModalPro
 
         fetchHistory()
     }, [video?.id])
-
     // ESC 키로 닫기
     useEffect(() => {
         const handleEsc = (e: KeyboardEvent) => {
@@ -338,18 +339,35 @@ export default function VideoDetailModal({ video, onClose }: VideoDetailModalPro
                     )}
 
                     {/* Charts */}
-                    <div className='mb-4'>
-                        {loading ? (
-                            <div className='flex justify-center items-center h-20 text-gray-500'>
-                                차트 데이터를 불러오는 중...
-                            </div>
-                        ) : snapshotHistory.length > 0 ? (
-                            <TrendLineChart data={formatSnapshotForChart(snapshotHistory)} />
-                        ) : (
-                            <div className='flex justify-center items-center h-20 text-gray-500'>
-                                차트 데이터가 없습니다
-                            </div>
-                        )}
+                    <div className='grid grid-cols-2 gap-4 mb-4'>
+                        <SimpleChart 
+                            // 리스트 개수만큼 전부 표시, 과거 -> 최신(최신이 맨 뒤)
+                            data={viewHistory
+                                .map(item => ({
+                                    time: new Date(item.snapshot_date).toLocaleDateString('ko-KR', { 
+                                        month: 'short', 
+                                        day: 'numeric'
+                                    }),
+                                    count: item.view_count
+                                }))}
+                            label='조회수' 
+                            color='bg-blue-500'
+                            isLoading={isLoadingHistory}
+                        />
+                        <SimpleChart
+                            // 리스트 개수만큼 전부 표시, 과거 -> 최신(최신이 맨 뒤)
+                            data={viewHistory
+                                .map(item => ({
+                                    time: new Date(item.snapshot_date).toLocaleDateString('ko-KR', { 
+                                        month: 'short', 
+                                        day: 'numeric'
+                                    }),
+                                    count: item.like_count
+                                }))}
+                            label='좋아요'
+                            color='bg-pink-500'
+                            isLoading={isLoadingHistory}
+                        />
                     </div>
 
                     {/* Actions */}
